@@ -1336,7 +1336,7 @@ async function failPayment() {
           failedBookingId
       )
 
-
+    isFailing.value = false
     closeFailModal()
 
 
