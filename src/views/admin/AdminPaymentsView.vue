@@ -1131,7 +1131,7 @@ async function approvePayment() {
           approvedBookingId
       )
 
-
+    isApproving.value = false
     closeApproveModal()
 
 
