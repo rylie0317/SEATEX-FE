@@ -52,15 +52,16 @@
       <div class="container">
 
         <!-- FILTER / SORT HEADER -->
-        <div
-          v-if="hasSearchCriteria"
-          class="results-header mb-4"
-        >
+        <div class="results-header mb-4">
 
           <div>
 
             <span class="results-label">
-              SEARCH RESULTS
+              {{
+                hasSearchCriteria
+                  ? 'SEARCH RESULTS'
+                  : 'AVAILABLE TRIPS'
+              }}
             </span>
 
             <h2 class="results-title">
@@ -68,7 +69,11 @@
             </h2>
 
             <p class="results-description mb-0">
-              Showing trips that match your search.
+              {{
+                hasSearchCriteria
+                  ? 'Showing trips that match your search.'
+                  : 'Showing all currently available trips.'
+              }}
             </p>
 
           </div>
@@ -185,11 +190,8 @@
         </div>
 
 
-        <!-- FILTERS -->
-        <div
-          v-if="hasSearchCriteria"
-          class="row g-4"
-        >
+        <!-- FILTERS + TRIPS -->
+        <div class="row g-4">
 
           <!-- SIDEBAR -->
           <div class="col-12 col-lg-3">
@@ -446,30 +448,6 @@
             </div>
 
           </div>
-
-        </div>
-
-
-        <!-- INITIAL STATE -->
-        <div
-          v-else
-          class="seatex-trips-state"
-        >
-
-          <div class="seatex-empty-icon">
-
-            <i class="bi bi-search"></i>
-
-          </div>
-
-          <h3>
-            Search for a trip
-          </h3>
-
-          <p>
-            Enter your origin, destination, and travel date
-            above to see available trips.
-          </p>
 
         </div>
 
@@ -766,12 +744,43 @@ function normalizeDate(date) {
 
 const searchedTrips = computed(() => {
 
+  // Start with all active trips
+  // that still have available seats.
+
+  const availableTrips =
+    trips.value.filter(
+      (trip) => {
+
+        if (!trip.isActive) {
+          return false
+        }
+
+        if (
+          Number(
+            trip.availableSeats
+          ) <= 0
+        ) {
+          return false
+        }
+
+        return true
+
+      }
+    )
+
+
+  // If there is no search criteria,
+  // show all available trips.
+
   if (!hasSearchCriteria.value) {
 
-    return []
+    return availableTrips
 
   }
 
+
+  // If there is a search,
+  // filter the available trips.
 
   const origin =
     searchCriteria.origin
@@ -789,26 +798,8 @@ const searchedTrips = computed(() => {
     searchCriteria.departureDate
 
 
-  return trips.value.filter(
+  return availableTrips.filter(
     (trip) => {
-
-      if (!trip.isActive) {
-
-        return false
-
-      }
-
-
-      if (
-        Number(
-          trip.availableSeats
-        ) <= 0
-      ) {
-
-        return false
-
-      }
-
 
       const tripOrigin =
         String(
@@ -855,6 +846,7 @@ const displayedTrips = computed(() => {
 
 
   // DEPARTURE TIME
+
   if (
     selectedDepartureTime.value
   ) {
@@ -872,25 +864,38 @@ const displayedTrips = computed(() => {
 
 
   // MAX PRICE
-if (selectedMaxPrice.value !== '') {
-  const maxPrice = Number(selectedMaxPrice.value)
 
-  console.log('MAX PRICE SELECTED:', selectedMaxPrice.value)
-  console.log('MAX PRICE NUMBER:', maxPrice)
+  if (
+    selectedMaxPrice.value !== ''
+  ) {
 
-  result = result.filter((trip) => {
-    const fare = Number(trip.fare)
+    const maxPrice =
+      Number(
+        selectedMaxPrice.value
+      )
 
-    console.log(
-      `${trip.departureTime} | ₱${fare} | ${fare <= maxPrice}`
-    )
+    result =
+      result.filter(
+        (trip) => {
 
-    return Number.isFinite(fare) && fare <= maxPrice
-  })
-}
+          const fare =
+            Number(
+              trip.fare
+            )
+
+          return (
+            Number.isFinite(fare) &&
+            fare <= maxPrice
+          )
+
+        }
+      )
+
+  }
 
 
   // BUS CLASS
+
   if (
     selectedBusClass.value
   ) {
@@ -906,6 +911,7 @@ if (selectedMaxPrice.value !== '') {
 
 
   // SORT
+
   result.sort(
     (a, b) => {
 
@@ -1001,7 +1007,7 @@ function getDeparturePeriod(
 
   const match =
     time.match(
-      /^(\d{1,2}):(\d{2})\s*(AM|PM)$/
+      /^(\d{1,2}):(\d{2})\s(AM|PM)$/
     )
 
 
@@ -1013,45 +1019,66 @@ function getDeparturePeriod(
 
 
   let hour =
-    Number(match[1])
+    Number(
+      match[1]
+    )
 
 
   const period =
     match[3]
 
 
-  if (period === 'AM') {
+  if (
+    period === 'AM'
+  ) {
 
-    if (hour === 12) {
+    if (
+      hour === 12
+    ) {
+
       hour = 0
+
     }
 
   }
 
   else {
 
-    if (hour !== 12) {
+    if (
+      hour !== 12
+    ) {
+
       hour += 12
+
     }
 
   }
 
 
-  if (hour >= 5 && hour < 12) {
+  if (
+    hour >= 5 &&
+    hour < 12
+  ) {
 
     return 'morning'
 
   }
 
 
-  if (hour >= 12 && hour < 17) {
+  if (
+    hour >= 12 &&
+    hour < 17
+  ) {
 
     return 'afternoon'
 
   }
 
 
-  if (hour >= 17 && hour < 21) {
+  if (
+    hour >= 17 &&
+    hour < 21
+  ) {
 
     return 'evening'
 
@@ -1076,7 +1103,9 @@ function compareTime(
     (time) => {
 
       if (!time) {
+
         return 0
+
       }
 
 
@@ -1085,21 +1114,27 @@ function compareTime(
           .trim()
           .toUpperCase()
           .match(
-            /^(\d{1,2}):(\d{2})\s*(AM|PM)$/
+            /^(\d{1,2}):(\d{2})\s(AM|PM)$/
           )
 
 
       if (!match) {
+
         return 0
+
       }
 
 
       let hour =
-        Number(match[1])
+        Number(
+          match[1]
+        )
 
 
       const minute =
-        Number(match[2])
+        Number(
+          match[2]
+        )
 
 
       const period =
@@ -1177,7 +1212,9 @@ function clearSearch() {
 
 
   router.push({
+
     name: 'trips'
+
   })
 
 }
@@ -1187,14 +1224,19 @@ function clearSearch() {
 // SELECT TRIP
 // ==========================================
 
-function handleTripSelect(trip) {
+function handleTripSelect(
+  trip
+) {
 
   router.push({
 
     name: 'trip-details',
 
     params: {
-      tripId: trip._id
+
+      tripId:
+        trip._id
+
     }
 
   })
@@ -1268,227 +1310,357 @@ watch(
 <style scoped>
 
 .seatex-trips-page {
+
   min-height: 100vh;
+
   background-color: #f8f9fb;
+
 }
 
 
 .seatex-trips-header {
+
   padding: 55px 0 30px;
+
 }
 
 
 .seatex-page-header {
+
   max-width: 750px;
+
 }
 
 
 .seatex-page-title {
+
   margin-top: 10px;
+
   margin-bottom: 10px;
+
   color: var(--seatex-navy);
+
   font-size: 36px;
+
   font-weight: 800;
+
 }
 
 
 .seatex-page-description {
+
   margin-bottom: 0;
+
   color: #6c757d;
+
 }
 
 
 .seatex-search-section {
+
   padding-bottom: 35px;
+
 }
 
 
 .seatex-results-section {
+
   padding-bottom: 70px;
+
 }
 
 
 .results-header {
+
   display: flex;
+
   align-items: flex-end;
+
   justify-content: space-between;
+
   gap: 20px;
+
 }
 
 
 .results-label {
+
   color: var(--seatex-primary);
+
   font-size: 10px;
+
   font-weight: 800;
+
   letter-spacing: 0.8px;
+
 }
 
 
 .results-title {
+
   margin: 4px 0;
+
   color: var(--seatex-navy);
+
   font-size: 25px;
+
   font-weight: 800;
+
 }
 
 
 .results-description {
+
   color: #8a96a3;
+
   font-size: 13px;
+
 }
 
 
 .sort-wrapper {
+
   min-width: 220px;
+
 }
 
 
 .sort-label {
+
   display: block;
+
   margin-bottom: 5px;
+
   color: #8a96a3;
+
   font-size: 10px;
+
   font-weight: 800;
+
   letter-spacing: 0.7px;
+
 }
 
 
 .search-summary {
+
   display: flex;
+
   align-items: center;
+
   gap: 25px;
+
   padding: 18px;
+
   background-color: #ffffff;
+
   border: 1px solid #e5e9ef;
+
   border-radius: 14px;
+
 }
 
 
 .search-summary-item {
+
   display: flex;
+
   align-items: center;
+
   gap: 10px;
+
   flex: 1;
+
 }
 
 
 .search-summary-item > i {
+
   color: var(--seatex-primary);
+
   font-size: 18px;
+
 }
 
 
 .search-summary-item > div {
+
   display: flex;
+
   flex-direction: column;
+
   gap: 3px;
+
 }
 
 
 .search-summary-item span {
+
   color: #8a96a3;
+
   font-size: 9px;
+
   font-weight: 800;
+
 }
 
 
 .search-summary-item strong {
+
   color: var(--seatex-navy);
+
   font-size: 13px;
+
 }
 
 
 .filter-card {
+
   padding: 20px;
+
   background-color: #ffffff;
+
   border: 1px solid #e5e9ef;
+
   border-radius: 16px;
+
 }
 
 
 .filter-header {
+
   display: flex;
+
   align-items: center;
+
   justify-content: space-between;
+
   margin-bottom: 20px;
+
 }
 
 
 .filter-header h3 {
+
   margin: 0;
+
   color: var(--seatex-navy);
+
   font-size: 17px;
+
   font-weight: 800;
+
 }
 
 
 .filter-group {
+
   margin-bottom: 18px;
+
 }
 
 
 .filter-group:last-child {
+
   margin-bottom: 0;
+
 }
 
 
 .filter-label {
+
   display: block;
+
   margin-bottom: 6px;
+
   color: #6c757d;
+
   font-size: 11px;
+
   font-weight: 700;
+
 }
 
 
 .seatex-trips-state {
+
   padding: 70px 20px;
+
   text-align: center;
+
   background-color: #ffffff;
+
   border: 1px solid #e5e9ef;
+
   border-radius: 18px;
+
 }
 
 
 .seatex-empty-icon {
+
   width: 65px;
+
   height: 65px;
+
   display: flex;
+
   align-items: center;
+
   justify-content: center;
+
   margin: 0 auto 18px;
+
   border-radius: 50%;
+
   background-color: var(--seatex-primary-soft);
+
   color: var(--seatex-primary);
+
   font-size: 27px;
+
 }
 
 
 .seatex-trips-state h3 {
+
   color: var(--seatex-navy);
+
   font-size: 20px;
+
   font-weight: 800;
+
 }
 
 
 .seatex-trips-state p {
+
   max-width: 500px;
+
   margin: 8px auto 20px;
+
   color: #8a96a3;
+
 }
 
 
 .trip-results {
+
   display: flex;
+
   flex-direction: column;
+
   gap: 18px;
+
 }
 
 
 @media (max-width: 991px) {
 
   .search-summary {
+
     flex-wrap: wrap;
+
   }
 
 }
@@ -1497,29 +1669,41 @@ watch(
 @media (max-width: 767px) {
 
   .seatex-page-title {
+
     font-size: 30px;
+
   }
 
 
   .results-header {
+
     align-items: flex-start;
+
     flex-direction: column;
+
   }
 
 
   .sort-wrapper {
+
     width: 100%;
+
   }
 
 
   .search-summary {
+
     align-items: flex-start;
+
     flex-direction: column;
+
   }
 
 
   .search-summary-item {
+
     width: 100%;
+
   }
 
 }
@@ -1528,12 +1712,16 @@ watch(
 @media (max-width: 576px) {
 
   .seatex-trips-header {
+
     padding-top: 35px;
+
   }
 
 
   .seatex-page-title {
+
     font-size: 27px;
+
   }
 
 }
