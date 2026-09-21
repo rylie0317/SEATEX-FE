@@ -493,7 +493,7 @@ async function createBooking() {
 
       notyf.success(
         response.data.message ||
-        "Booking created. Please proceed with payment."
+        "Booking created please proceed with payment"
       );
 
       /*
