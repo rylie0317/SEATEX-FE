@@ -364,7 +364,7 @@
             />
 
             <small class="text-muted d-block mt-2">
-              Accepted formats: JPG, JPEG, PNG
+              Accepted formats: JPG, JPEG, PNG. Maximum file size: 10 MB.
             </small>
 
             <!-- Preview -->
