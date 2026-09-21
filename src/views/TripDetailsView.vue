@@ -153,27 +153,6 @@
                   </div>
                 </div>
 
-                <!-- TOTAL SEATS -->
-                <div class="col-12 col-md-6 col-lg-3">
-                  <div class="detail-item">
-
-                    <div class="detail-icon">
-                      <i class="bi bi-grid-3x3-gap"></i>
-                    </div>
-
-                    <div>
-                      <span class="detail-label">
-                        TOTAL SEATS
-                      </span>
-
-                      <strong>
-                        {{ trip.totalSeats }}
-                      </strong>
-                    </div>
-
-                  </div>
-                </div>
-
                 <!-- AVAILABLE SEATS -->
                 <div class="col-12 col-md-6 col-lg-3">
                   <div class="detail-item">
@@ -184,7 +163,7 @@
 
                     <div>
                       <span class="detail-label">
-                        AVAILABLE
+                        TOTAL AVAILABLE SEATS
                       </span>
 
                       <strong>
