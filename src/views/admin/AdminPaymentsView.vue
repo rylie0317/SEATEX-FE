@@ -1377,24 +1377,59 @@ function getPaymentProofUrl(booking) {
     return ''
   }
 
-
   const proofPath =
-    booking.paymentProof
-      .replace(/\\/g, '/')
+    booking.paymentProof.trim()
 
+  // New payment proofs are stored as Base64 data URLs.
+  // Return them directly without adding the API URL.
+  if (proofPath.startsWith('data:image/')) {
+    return proofPath
+  }
+
+  // Keep compatibility with existing payment proofs
+  // that may still be stored as /uploads/... paths.
+  if (
+    proofPath.startsWith('http://') ||
+    proofPath.startsWith('https://')
+  ) {
+    return proofPath
+  }
 
   const normalizedPath =
     proofPath.startsWith('/')
       ? proofPath
       : `/${proofPath}`
 
-
   return (
     `${import.meta.env.VITE_SEATEX_API}` +
     normalizedPath
   )
-
 }
+
+// function getPaymentProofUrl(booking) {
+
+//   if (!booking?.paymentProof) {
+//     return ''
+//   }
+
+
+//   const proofPath =
+//     booking.paymentProof
+//       .replace(/\\/g, '/')
+
+
+//   const normalizedPath =
+//     proofPath.startsWith('/')
+//       ? proofPath
+//       : `/${proofPath}`
+
+
+//   return (
+//     `${import.meta.env.VITE_SEATEX_API}` +
+//     normalizedPath
+//   )
+
+// }
 
 
 /* ==========================================
