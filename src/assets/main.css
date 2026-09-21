@@ -85,6 +85,21 @@ textarea {
    COMMON SECTION
 ========================================================= */
 
+.home-trips-link {
+  display: inline-flex;
+  align-items: center;
+  color: var(--seatex-primary);
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.home-trips-link:hover {
+  color: var(--seatex-navy);
+  gap: 3px;
+}
+
 .seatex-section {
   position: relative;
 

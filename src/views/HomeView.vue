@@ -42,6 +42,16 @@
 
           <TripSearch @search="handleSearch" />
 
+          <div class="text-center mt-4">
+          <router-link
+            to="/trips"
+            class="home-trips-link"
+          >
+            View All Available Trips
+            <i class="bi bi-arrow-right ms-1"></i>
+          </router-link>
+        </div>
+
         </div>
 
       </div>
